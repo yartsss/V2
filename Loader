@@ -1,0 +1,180 @@
+local Scripts = {
+    { Name = "BRM5", Detail = "Blackhawk Rescue Mission 5", Url = "https://api.jnkie.com/api/v1/luascripts/public/fcb1fc1ef425ec94534aaec0b6e8c7e7f1c1a4c8dc1d1fbd009472668cdf545d/download" },
+    { Name = "Universal", Detail = "Works in almost any game", Url = "https://api.jnkie.com/api/v1/luascripts/public/ad14460ff37629606efa22632e79a797b77d2e1b4e7d1b68833abbb11e7305d1/download" },
+}
+
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local Background = Color3.fromRGB(16, 17, 21)
+local Main = Color3.fromRGB(29, 30, 36)
+local FontColor = Color3.fromRGB(218, 219, 224)
+local Muted = Color3.fromRGB(138, 142, 156)
+local Accent = Color3.fromRGB(161, 190, 244)
+local Outline = Color3.fromRGB(42, 44, 53)
+
+local previous = CoreGui:FindFirstChild("LeanLoader")
+if previous then previous:Destroy() end
+
+local screen = Instance.new("ScreenGui")
+screen.Name = "LeanLoader"
+screen.ResetOnSpawn = false
+screen.ZIndexBehavior = Enum.ZIndexBehavior.Global
+screen.Parent = CoreGui
+if protectgui then protectgui(screen) elseif syn and syn.protect_gui then syn.protect_gui(screen) end
+
+local outer = Instance.new("Frame")
+outer.Name = "Window"
+outer.AnchorPoint = Vector2.new(0.5, 0.5)
+outer.Position = UDim2.fromScale(0.5, 0.5)
+outer.Size = UDim2.fromOffset(320, 184)
+outer.BackgroundColor3 = Color3.new(0, 0, 0)
+outer.BorderSizePixel = 0
+outer.Active = true
+outer.Parent = screen
+
+local inner = Instance.new("Frame")
+inner.Name = "Inner"
+inner.Position = UDim2.fromOffset(1, 1)
+inner.Size = UDim2.new(1, -2, 1, -2)
+inner.BackgroundColor3 = Background
+inner.BorderSizePixel = 0
+inner.Parent = outer
+
+local accent = Instance.new("Frame")
+accent.Name = "Accent"
+accent.Size = UDim2.new(1, 0, 0, 1)
+accent.BackgroundColor3 = Accent
+accent.BorderSizePixel = 0
+accent.ZIndex = 3
+accent.Parent = inner
+
+local header = Instance.new("Frame")
+header.Name = "Header"
+header.BackgroundTransparency = 1
+header.Position = UDim2.fromOffset(0, 1)
+header.Size = UDim2.new(1, 0, 0, 42)
+header.Active = true
+header.Parent = inner
+
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Position = UDim2.fromOffset(16, 8)
+title.Size = UDim2.new(1, -32, 0, 16)
+title.Font = Enum.Font.GothamMedium
+title.Text = "Lean"
+title.TextSize = 14
+title.TextColor3 = FontColor
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = header
+
+local subtitle = Instance.new("TextLabel")
+subtitle.BackgroundTransparency = 1
+subtitle.Position = UDim2.fromOffset(16, 24)
+subtitle.Size = UDim2.new(1, -32, 0, 14)
+subtitle.Font = Enum.Font.Gotham
+subtitle.Text = "Choose a script"
+subtitle.TextSize = 11
+subtitle.TextColor3 = Muted
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.Parent = header
+
+local rule = Instance.new("Frame")
+rule.Position = UDim2.new(0, 16, 0, 46)
+rule.Size = UDim2.new(1, -32, 0, 1)
+rule.BackgroundColor3 = Outline
+rule.BorderSizePixel = 0
+rule.Parent = inner
+
+local dragging = false
+local dragStart, startPosition
+header.InputBegan:Connect(function(input)
+    if input.UserInputType ~= Enum.UserInputType.MouseButton1 then return end
+    dragging = true
+    dragStart = input.Position
+    startPosition = outer.Position
+end)
+header.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if not dragging or input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+    local delta = input.Position - dragStart
+    outer.Position = UDim2.new(startPosition.X.Scale, startPosition.X.Offset + delta.X, startPosition.Y.Scale, startPosition.Y.Offset + delta.Y)
+end)
+
+local busy = false
+
+local function runScript(entry)
+    if busy then return end
+    busy = true
+    local url = entry.Url
+    task.spawn(function()
+        loadstring(game:HttpGet(url))()
+    end)
+    screen:Destroy()
+end
+
+for index, entry in ipairs(Scripts) do
+    local button = Instance.new("TextButton")
+    button.Name = entry.Name
+    button.AutoButtonColor = false
+    button.BackgroundColor3 = Main
+    button.BackgroundTransparency = 1
+    button.BorderSizePixel = 0
+    button.Position = UDim2.fromOffset(12, 56 + (index - 1) * 58)
+    button.Size = UDim2.new(1, -24, 0, 52)
+    button.Text = ""
+    button.Parent = inner
+
+    local buttonStroke = Instance.new("UIStroke")
+    buttonStroke.Color = Outline
+    buttonStroke.Transparency = 1
+    buttonStroke.Thickness = 1
+    buttonStroke.Parent = button
+
+    local bar = Instance.new("Frame")
+    bar.Size = UDim2.new(0, 2, 1, -16)
+    bar.Position = UDim2.fromOffset(0, 8)
+    bar.BackgroundColor3 = Accent
+    bar.BackgroundTransparency = 1
+    bar.BorderSizePixel = 0
+    bar.Parent = button
+
+    local name = Instance.new("TextLabel")
+    name.BackgroundTransparency = 1
+    name.Position = UDim2.fromOffset(16, 8)
+    name.Size = UDim2.new(1, -28, 0, 18)
+    name.Font = Enum.Font.GothamMedium
+    name.Text = entry.Name
+    name.TextSize = 14
+    name.TextColor3 = FontColor
+    name.TextXAlignment = Enum.TextXAlignment.Left
+    name.Parent = button
+
+    local detail = Instance.new("TextLabel")
+    detail.BackgroundTransparency = 1
+    detail.Position = UDim2.fromOffset(16, 26)
+    detail.Size = UDim2.new(1, -28, 0, 16)
+    detail.Font = Enum.Font.Gotham
+    detail.Text = entry.Detail
+    detail.TextSize = 11
+    detail.TextColor3 = Muted
+    detail.TextTransparency = 0.15
+    detail.TextXAlignment = Enum.TextXAlignment.Left
+    detail.Parent = button
+
+    local function hover(on)
+        if busy then return end
+        TweenService:Create(button, TweenInfo.new(0.12), { BackgroundTransparency = on and 0 or 1 }):Play()
+        TweenService:Create(buttonStroke, TweenInfo.new(0.12), { Transparency = on and 0 or 1 }):Play()
+        TweenService:Create(bar, TweenInfo.new(0.12), { BackgroundTransparency = on and 0 or 1 }):Play()
+    end
+
+    button.MouseEnter:Connect(function() hover(true) end)
+    button.MouseLeave:Connect(function() hover(false) end)
+    button.MouseButton1Click:Connect(function()
+        runScript(entry)
+    end)
+end
